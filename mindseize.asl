@@ -1,38 +1,39 @@
 state("MindSeize") {}
 
 startup {
-	vars.targetStartPress = new SigScanTarget(31, "55 48 8B EC 48 83 EC 30 48 B8 ?? ?? ?? ?? ?? ?? ?? ?? 0F B6 00 85 C0 0F 85 ?? ?? ?? ?? 48 B8 ?? ?? ?? ?? ?? ?? ?? ?? C6 00 01");
+	vars.target = new SigScanTarget(0, "37 13 37 13 37 13 37 13");
 }
 
 init {
 	print("Scanning for pointers");
 
-	IntPtr ptrStartPress = IntPtr.Zero;
+	IntPtr ptr = IntPtr.Zero;
 
 	foreach(var page in game.MemoryPages()) {
 		var scanner = new SignatureScanner(game, page.BaseAddress, (int)page.RegionSize);
 
-		if(ptrStartPress == IntPtr.Zero) {
-			ptrStartPress = scanner.Scan(vars.targetStartPress);
+		if(ptr == IntPtr.Zero) {
+			ptr = scanner.Scan(vars.target);
 		}
 
-		if(ptrStartPress != IntPtr.Zero) {
+		if(ptr != IntPtr.Zero) {
 			break;
 		}
 	}
 
-	if(ptrStartPress == IntPtr.Zero) {
+	if(ptr == IntPtr.Zero) {
 		throw new Exception("Failed to scan for pointers");
 	}
 
-	print("ptrStartPress = " + ptrStartPress.ToString("X4"));
+	print("ptr = " + ptr.ToString("X4"));
 
-	ptrStartPress = game.ReadValue<IntPtr>(ptrStartPress);
+	//ptr = game.ReadValue<IntPtr>(ptr);
+	IntPtr ptrInGame = IntPtr.Add(ptr, 0x1c);
 
 	print("Scanned all pointers");
 
 	vars.watchers = new MemoryWatcherList {
-		new MemoryWatcher<byte>(ptrStartPress) { Name = "StartPress" }
+		new MemoryWatcher<byte>(ptrInGame) { Name = "InGame" }
 	};
 }
 
@@ -41,6 +42,6 @@ update {
 }
 
 start {
-	bool StartPress = vars.watchers["StartPress"].Changed && vars.watchers["StartPress"].Current == 1;
-	return StartPress;
+	bool InGame = vars.watchers["InGame"].Changed && vars.watchers["InGame"].Current == 1;
+	return InGame;
 }
