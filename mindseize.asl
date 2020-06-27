@@ -1,5 +1,7 @@
 state("MindSeize", "1.1.6") {}
 state("MindSeize", "1.1.7") {}
+state("MindSeize", "1.1.8") {}
+state("MindSeize", "1.2.2") {}
 
 startup {
 	vars.target = new SigScanTarget(0, "37 13 37 13 37 13 37 13 00 00 00 00 00 00 00 00");
